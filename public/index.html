@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Spotify Now Playing</title>
+  </head>
+  <body>
+    <div style="width: 300px">
+      <img
+        src=""
+        width="300"
+        height="300"
+        id="album_art"
+        crossorigin="anonymous"
+        style="object-fit: contain; background-color: #f0f0f0"
+      />
+      <div
+        style="display: flex; align-items: center; gap: 5px; font-size: 13px"
+      >
+        <span id="state_msg"></span>
+        <span id="progress_time"></span>
+        <progress id="progress_bar" style="flex: 1"></progress>
+        <span id="duration_time"></span>
+      </div>
+      <div id="details">
+        <a id="track_name" target="_blank"></a>
+        from
+        <a id="album_name" target="_blank"></a>
+        by
+        <span id="artist_names"></span>
+      </div>
+    </div>
+
+    <script>
+      let track = null;
+      let progress = null;
+
+      const source = new EventSource('/activity', {
+        withCredentials: true,
+      });
+      source.addEventListener('open', function (event) {
+        console.log('Open', event);
+      });
+      source.addEventListener('error', function (event) {
+        console.error('Error', event);
+      });
+      source.addEventListener('state', function (event) {
+        const state = JSON.parse(event.data);
+        console.log('state', state);
+        if (state && track) {
+          state_msg.innerText = state === 'playing' ? '▶️' : '⏸️';
+        } else {
+          state_msg.innerText = '-';
+        }
+      });
+      source.addEventListener('track', function (event) {
+        track = JSON.parse(event.data);
+
+        if (track) {
+          album_art.src = track.album.images[0].url;
+          track_name.innerText = track.name;
+          track_name.href = 'https://open.spotify.com/track/' + track.id;
+          album_name.innerText = track.album.name;
+          album_name.href = 'https://open.spotify.com/album/' + track.album.id;
+
+          artist_names.innerHTML = '';
+          for (const artist of track.artists) {
+            const a = document.createElement('a');
+            a.innerText = artist.name;
+            a.href = 'https://open.spotify.com/artist/' + artist.id;
+            a.target = '_blank';
+            artist_names.appendChild(a);
+            artist_names.appendChild(document.createTextNode(', '));
+          }
+          artist_names.lastChild.remove();
+
+          details.hidden = false;
+        } else {
+          album_art.src = '';
+          details.hidden = true;
+        }
+      });
+      source.addEventListener('progress', function (event) {
+        progress = JSON.parse(event.data);
+
+        if (progress && track) {
+          const seconds = Math.floor(progress / 1000) % 60;
+          const minutes = Math.floor(progress / 60000);
+
+          const total = track.duration_ms;
+          const totalSeconds = Math.floor(total / 1000) % 60;
+          const totalMinutes = Math.floor(total / 60000);
+
+          progress_time.innerText = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+          duration_time.innerText = `${totalMinutes}:${totalSeconds.toString().padStart(2, '0')}`;
+          progress_bar.max = track.duration_ms;
+          progress_bar.value = progress;
+        } else {
+          progress_time.innerText = '-';
+          duration_time.innerText = '-';
+          progress_bar.max = 1;
+          progress_bar.value = 0;
+        }
+      });
+    </script>
+  </body>
+</html>
