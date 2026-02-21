@@ -15,9 +15,10 @@ const clientSecret = process.env.SPOTIFY_CLIENT_SECRET as string;
 const hideExplicit = process.env.HIDE_EXPLICIT === 'true';
 
 const port = parsePort(process.env.PORT, 3000);
+const appUrl = process.env.APP_URL || `http://127.0.0.1:${port}`;
 
 const STATE_COOKIE_NAME = 'spotify_auth_state';
-const redirectUri = `http://127.0.0.1:${port}/return`;
+const redirectUri = new URL('/return', appUrl).toString();
 
 let accessToken = '';
 let expiresAt = 0;
