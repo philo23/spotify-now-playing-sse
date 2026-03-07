@@ -145,7 +145,7 @@ app.get('/activity', (req, res) => {
 
 const server = createServer(app);
 server.listen(port, () => {
-  console.log('Server started on:', server.address().port);
+  console.log('Server started on:', port);
 });
 
 async function checkActivity() {
