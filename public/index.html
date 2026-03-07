@@ -83,7 +83,7 @@
       source.addEventListener('progress', function (event) {
         progress = JSON.parse(event.data);
 
-        if (progress && track) {
+        if (progress !== null && track) {
           const seconds = Math.floor(progress / 1000) % 60;
           const minutes = Math.floor(progress / 60000);
 
