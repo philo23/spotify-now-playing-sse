@@ -227,7 +227,9 @@ async function getAccessToken() {
 }
 
 function formatActivity(data: any) {
-  if (!data || !data.is_playing) {
+  if (!data) {
+    return null;
+  } else if (!config.exposePausedPlayback && !data.is_playing) {
     return null;
   } else if (config.hideExplicit && data.item.explicit) {
     return null;

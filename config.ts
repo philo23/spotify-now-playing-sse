@@ -10,6 +10,7 @@ export interface AppConfig {
   appUrl: string;
   redirectUri: string;
   sseAllowOrigin: string;
+  exposePausedPlayback: boolean;
   hideExplicit: boolean;
   authoriseSecret: string;
   stateCookieSecure: boolean;
@@ -33,6 +34,7 @@ function loadConfig(env: NodeJS.ProcessEnv): AppConfig {
     appUrl,
     redirectUri: new URL('return', appUrl).toString(),
     sseAllowOrigin: parseOrigin(env.SSE_ALLOW_ORIGIN, DEFAULT_SSE_ALLOW_ORIGIN),
+    exposePausedPlayback: parseBoolean(env.EXPOSE_PAUSED_PLAYBACK, false),
     hideExplicit: parseBoolean(env.HIDE_EXPLICIT, false),
     authoriseSecret: parseOptionalString(env.AUTHORISE_SECRET) ?? randomUUID(),
     stateCookieSecure,

@@ -10,12 +10,12 @@ The main settings are:
 - `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`: required.
 - `SSE_ALLOW_ORIGIN`: `Access-Control-Allow-Origin` value for `/activity`. Defaults to `*`.
 - `STATE_COOKIE_SECURE`: optional override for the OAuth state cookie. If omitted, it follows the `PUBLIC_URL` scheme.
-- `ALLOW_STATIC`, `HIDE_EXPLICIT`, `AUTHORISE_SECRET`: optional behavior flags.
+- `ALLOW_STATIC`, `HIDE_EXPLICIT`, `EXPOSE_PAUSED_PLAYBACK`, `AUTHORISE_SECRET`: optional behavior flags.
 
 Three SSE events are emitted:
 
 - track: when the song changes (JSON blob of track data)
-- state: when playing/pausing is detected (either "playing" or "paused")
+- state: when playback state changes. By default only `"playing"` is exposed; set `EXPOSE_PAUSED_PLAYBACK=true` to also emit `"paused"`.
 - progress: when playback through the song is updated (current progress in milliseconds)
 
 # Track data format
