@@ -16,6 +16,7 @@ const hideExplicit = process.env.HIDE_EXPLICIT === 'true';
 
 const port = parsePort(process.env.PORT, 3000);
 const allowStatic = process.env.ALLOW_STATIC === 'true';
+const authoriseSecret = process.env.AUTHORISE_SECRET || randomUUID();
 const appUrl = process.env.APP_URL || `http://127.0.0.1:${port}/`;
 
 const STATE_COOKIE_NAME = 'spotify_auth_state';
@@ -38,6 +39,11 @@ if (allowStatic) {
 frontEnd.use(cookieParser());
 
 frontEnd.get('/authorise', (req, res) => {
+  if (req.query.secret !== authoriseSecret) {
+    res.status(401).send('Unauthorized');
+    return;
+  }
+
   const state = randomUUID();
   res.cookie(STATE_COOKIE_NAME, state, {
     httpOnly: true,
