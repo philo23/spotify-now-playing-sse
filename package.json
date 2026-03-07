@@ -5,19 +5,18 @@
   "private": true,
   "scripts": {
     "start": "bun run server.ts",
-    "dev": "bun --watch run server.ts"
+    "dev": "bun --watch run server.ts",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@types/bun": "latest"
-  },
-  "peerDependencies": {
+    "@types/bun": "latest",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.6",
+    "prettier": "^3.8.1",
     "typescript": "^5"
   },
   "dependencies": {
-    "@types/cookie-parser": "^1.4.10",
-    "@types/express": "^5.0.6",
     "cookie-parser": "^1.4.7",
-    "express": "^5.2.1",
-    "prettier": "^3.8.1"
+    "express": "^5.2.1"
   }
 }
