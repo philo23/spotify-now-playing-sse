@@ -3,24 +3,13 @@ import express, { type Response } from 'express';
 import cookieParser from 'cookie-parser';
 import { redis } from 'bun';
 import { randomUUID } from 'node:crypto';
+import { config, STATE_COOKIE_NAME } from './config.ts';
 import {
   authoriseUrl,
   currentlyPlaying,
   fetchAccessToken,
   fetchRefreshToken,
 } from './spotify.ts';
-
-const clientId = process.env.SPOTIFY_CLIENT_ID as string;
-const clientSecret = process.env.SPOTIFY_CLIENT_SECRET as string;
-const hideExplicit = process.env.HIDE_EXPLICIT === 'true';
-
-const port = parsePort(process.env.PORT, 3000);
-const allowStatic = process.env.ALLOW_STATIC === 'true';
-const authoriseSecret = process.env.AUTHORISE_SECRET || randomUUID();
-const appUrl = process.env.APP_URL || `http://127.0.0.1:${port}/`;
-
-const STATE_COOKIE_NAME = 'spotify_auth_state';
-const redirectUri = new URL('return', appUrl).toString();
 
 let accessToken = '';
 let expiresAt = 0;
@@ -33,13 +22,13 @@ app.disable('x-powered-by');
 const connections = new Set<Response>();
 
 const frontEnd = express.Router();
-if (allowStatic) {
+if (config.allowStatic) {
   frontEnd.use(express.static('public'));
 }
 frontEnd.use(cookieParser());
 
 frontEnd.get('/authorise', (req, res) => {
-  if (req.query.secret !== authoriseSecret) {
+  if (req.query.secret !== config.authoriseSecret) {
     res.status(401).send('Unauthorized');
     return;
   }
@@ -47,10 +36,16 @@ frontEnd.get('/authorise', (req, res) => {
   const state = randomUUID();
   res.cookie(STATE_COOKIE_NAME, state, {
     httpOnly: true,
-    secure: true,
+    secure: config.stateCookieSecure,
     sameSite: 'lax',
   });
-  res.redirect(authoriseUrl({ clientId, state, redirectUri }));
+  res.redirect(
+    authoriseUrl({
+      clientId: config.spotifyClientId,
+      state,
+      redirectUri: config.redirectUri,
+    }),
+  );
 });
 
 frontEnd.get('/return', async (req, res) => {
@@ -70,10 +65,10 @@ frontEnd.get('/return', async (req, res) => {
 
   try {
     const result = await fetchAccessToken({
-      clientId,
-      clientSecret,
+      clientId: config.spotifyClientId,
+      clientSecret: config.spotifyClientSecret,
       code,
-      redirectUri,
+      redirectUri: config.redirectUri,
     });
 
     await redis.set('spotify_refresh_token', result.refresh_token);
@@ -116,7 +111,7 @@ app.get('/activity', (req, res) => {
 
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', config.sseAllowOrigin);
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders();
 
@@ -144,8 +139,8 @@ app.get('/activity', (req, res) => {
 });
 
 const server = createServer(app);
-server.listen(port, () => {
-  console.log('Server started on:', port);
+server.listen(config.port, () => {
+  console.log('Server started on:', config.port);
 });
 
 async function checkActivity() {
@@ -216,8 +211,8 @@ async function getAccessToken() {
   }
 
   const result = await fetchRefreshToken({
-    clientId,
-    clientSecret,
+    clientId: config.spotifyClientId,
+    clientSecret: config.spotifyClientSecret,
     refreshToken,
   });
 
@@ -230,7 +225,7 @@ async function getAccessToken() {
 function formatActivity(data: any) {
   if (!data || !data.is_playing) {
     return null;
-  } else if (hideExplicit && data.item.explicit) {
+  } else if (config.hideExplicit && data.item.explicit) {
     return null;
   }
 
@@ -254,18 +249,4 @@ function formatActivity(data: any) {
       },
     },
   };
-}
-
-function parsePort(value: string | undefined, defaultPort: number): number {
-  if (!value) {
-    return defaultPort;
-  }
-
-  const port = Number(value);
-
-  if (!Number.isInteger(port) || port <= 0 || port > 65535) {
-    throw new Error(`Invalid PORT: ${value}`);
-  }
-
-  return port;
 }
