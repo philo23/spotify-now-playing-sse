@@ -15,6 +15,7 @@ const clientSecret = process.env.SPOTIFY_CLIENT_SECRET as string;
 const hideExplicit = process.env.HIDE_EXPLICIT === 'true';
 
 const port = parsePort(process.env.PORT, 3000);
+const allowStatic = process.env.ALLOW_STATIC === 'true';
 const appUrl = process.env.APP_URL || `http://127.0.0.1:${port}`;
 
 const STATE_COOKIE_NAME = 'spotify_auth_state';
@@ -31,7 +32,9 @@ app.disable('x-powered-by');
 const connections = new Set<Response>();
 
 const frontEnd = express.Router();
-frontEnd.use(express.static('public'));
+if (allowStatic) {
+  frontEnd.use(express.static('public'));
+}
 frontEnd.use(cookieParser());
 
 frontEnd.get('/authorise', (req, res) => {
