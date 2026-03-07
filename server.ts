@@ -104,7 +104,10 @@ app.get('/raw', async (req, res) => {
 });
 
 app.get('/activity', (req, res) => {
-  if (!req.headers.accept || !req.headers.accept.includes('text/event-stream')) {
+  if (
+    !req.headers.accept ||
+    !req.headers.accept.includes('text/event-stream')
+  ) {
     res.status(400).send('Invalid Accept header');
     return;
   }
