@@ -21,7 +21,7 @@ export const config: AppConfig = loadConfig(process.env);
 
 function loadConfig(env: NodeJS.ProcessEnv): AppConfig {
   const port = parsePort(env.PORT, DEFAULT_PORT);
-  const appUrl = parseUrl(env.APP_URL, `http://127.0.0.1:${port}/`);
+  const appUrl = parseUrl(env.PUBLIC_URL, `http://127.0.0.1:${port}/`);
   const stateCookieSecure = parseBoolean(
     env.STATE_COOKIE_SECURE,
     new URL(appUrl).protocol === 'https:',
@@ -98,7 +98,7 @@ function parseUrl(value: string | undefined, defaultValue: string): string {
   try {
     return new URL(rawValue).toString();
   } catch {
-    throw new Error(`Invalid APP_URL: ${rawValue}`);
+    throw new Error(`Invalid PUBLIC_URL: ${rawValue}`);
   }
 }
 

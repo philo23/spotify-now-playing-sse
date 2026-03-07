@@ -6,10 +6,10 @@ The server now validates its runtime configuration at startup through `config.ts
 The main settings are:
 
 - `PORT`: HTTP port to listen on. Defaults to `3000`.
-- `APP_URL`: Base public URL for the app. Defaults to `http://127.0.0.1:${PORT}/`.
+- `PUBLIC_URL`: Base public URL for the app. Defaults to `http://127.0.0.1:${PORT}/`.
 - `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`: required.
 - `SSE_ALLOW_ORIGIN`: `Access-Control-Allow-Origin` value for `/activity`. Defaults to `*`.
-- `STATE_COOKIE_SECURE`: optional override for the OAuth state cookie. If omitted, it follows the `APP_URL` scheme.
+- `STATE_COOKIE_SECURE`: optional override for the OAuth state cookie. If omitted, it follows the `PUBLIC_URL` scheme.
 - `ALLOW_STATIC`, `HIDE_EXPLICIT`, `AUTHORISE_SECRET`: optional behavior flags.
 
 Three SSE events are emitted:
