@@ -192,13 +192,17 @@ async function checkActivity() {
       if (statePayload) res.write(statePayload);
       if (progressPayload) res.write(progressPayload);
     }
-  } catch (e) {
-    // console.error('Failed to fetch currently playing track', e);
+  } catch (error) {
+    console.error('Failed to fetch currently playing track', error);
   }
 }
 
-setInterval(checkActivity, 1000);
-checkActivity();
+async function pollActivity() {
+  await checkActivity();
+  setTimeout(pollActivity, 1000);
+}
+
+void pollActivity();
 
 async function getAccessToken() {
   if (Date.now() < expiresAt) {
