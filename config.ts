@@ -1,5 +1,3 @@
-import { randomUUID } from 'node:crypto';
-
 const DEFAULT_PORT = 3000;
 const DEFAULT_SSE_ALLOW_ORIGIN = '*';
 export const STATE_COOKIE_NAME = 'spotify_auth_state';
@@ -12,7 +10,6 @@ export interface AppConfig {
   sseAllowOrigin: string;
   exposePausedPlayback: boolean;
   hideExplicit: boolean;
-  authoriseSecret: string;
   stateCookieSecure: boolean;
   spotifyClientId: string;
   spotifyClientSecret: string;
@@ -36,7 +33,6 @@ function loadConfig(env: NodeJS.ProcessEnv): AppConfig {
     sseAllowOrigin: parseOrigin(env.SSE_ALLOW_ORIGIN, DEFAULT_SSE_ALLOW_ORIGIN),
     exposePausedPlayback: parseBoolean(env.EXPOSE_PAUSED_PLAYBACK, false),
     hideExplicit: parseBoolean(env.HIDE_EXPLICIT, false),
-    authoriseSecret: parseOptionalString(env.AUTHORISE_SECRET) ?? randomUUID(),
     stateCookieSecure,
     spotifyClientId: requireString('SPOTIFY_CLIENT_ID', env.SPOTIFY_CLIENT_ID),
     spotifyClientSecret: requireString(
@@ -54,11 +50,6 @@ function requireString(name: string, value: string | undefined): string {
   }
 
   return trimmed;
-}
-
-function parseOptionalString(value: string | undefined): string | undefined {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : undefined;
 }
 
 function parseBoolean(

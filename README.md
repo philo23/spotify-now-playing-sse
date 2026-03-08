@@ -10,7 +10,9 @@ The main settings are:
 - `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`: required.
 - `SSE_ALLOW_ORIGIN`: `Access-Control-Allow-Origin` value for `/activity`. Defaults to `*`.
 - `STATE_COOKIE_SECURE`: optional override for the OAuth state cookie. If omitted, it follows the `PUBLIC_URL` scheme.
-- `ALLOW_STATIC`, `HIDE_EXPLICIT`, `EXPOSE_PAUSED_PLAYBACK`, `AUTHORISE_SECRET`: optional behavior flags.
+- `ALLOW_STATIC`, `HIDE_EXPLICIT`, `EXPOSE_PAUSED_PLAYBACK`: optional behavior flags.
+
+While the `spotify_refresh_token` is missing, a one-time setup link is printed in the console to authorise your Spotify account.
 
 Three SSE events are emitted:
 

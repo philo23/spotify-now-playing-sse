@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import express, { type Response } from 'express';
 import cookieParser from 'cookie-parser';
 import { redis } from 'bun';
-import { randomUUID } from 'node:crypto';
+import { randomBytes } from 'node:crypto';
 import { config, STATE_COOKIE_NAME } from './config.ts';
 import {
   authoriseUrl,
@@ -10,6 +10,9 @@ import {
   fetchAccessToken,
   fetchRefreshToken,
 } from './spotify.ts';
+
+const refreshTokenExists = await redis.exists('spotify_refresh_token');
+let setupSecret = refreshTokenExists ? null : randomBytes(32).toString('hex');
 
 let accessToken = '';
 let expiresAt = 0;
@@ -29,13 +32,15 @@ if (config.allowStatic) {
 }
 frontEnd.use(cookieParser());
 
-frontEnd.get('/authorise', (req, res) => {
-  if (req.query.secret !== config.authoriseSecret) {
-    res.status(401).send('Unauthorized');
+frontEnd.get('/setup', (req, res) => {
+  const secret =
+    typeof req.query.secret === 'string' ? req.query.secret : undefined;
+  if (!setupSecret || secret !== setupSecret) {
+    res.status(404).send('Not found');
     return;
   }
 
-  const state = randomUUID();
+  const state = randomBytes(32).toString('hex');
   res.cookie(STATE_COOKIE_NAME, state, {
     httpOnly: true,
     secure: config.stateCookieSecure,
@@ -51,6 +56,11 @@ frontEnd.get('/authorise', (req, res) => {
 });
 
 frontEnd.get('/return', async (req, res) => {
+  if (!setupSecret) {
+    res.status(404).send('Not found');
+    return;
+  }
+
   const expectedState = req.cookies[STATE_COOKIE_NAME];
   const actualState =
     typeof req.query.state === 'string' ? req.query.state : undefined;
@@ -64,7 +74,11 @@ frontEnd.get('/return', async (req, res) => {
     return;
   }
 
-  const code = req.query.code as string;
+  const code = typeof req.query.code === 'string' ? req.query.code : undefined;
+  if (!code) {
+    res.status(400).send('Missing code');
+    return;
+  }
 
   try {
     const result = await fetchAccessToken({
@@ -76,6 +90,7 @@ frontEnd.get('/return', async (req, res) => {
 
     await redis.set('spotify_refresh_token', result.refresh_token);
 
+    setupSecret = null;
     accessToken = result.access_token;
     expiresAt = Date.now() + result.expires_in * 1000;
   } catch (err) {
@@ -153,6 +168,15 @@ app.get('/activity', (req, res) => {
 const server = createServer(app);
 server.listen(config.port, () => {
   console.log('Server started on:', config.port);
+
+  if (setupSecret) {
+    const setupUrl = new URL('setup', config.appUrl);
+    setupUrl.searchParams.set('secret', setupSecret);
+    console.log(
+      'Authorise your Spotify account to get started:',
+      setupUrl.toString(),
+    );
+  }
 });
 
 async function checkActivity(force = false) {
@@ -236,7 +260,7 @@ async function getAccessToken() {
 
   const refreshToken = await redis.get('spotify_refresh_token');
   if (!refreshToken) {
-    throw new Error('No refresh token available');
+    return null;
   }
 
   const result = await fetchRefreshToken({
