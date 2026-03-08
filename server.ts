@@ -52,11 +52,12 @@ frontEnd.get('/authorise', (req, res) => {
 
 frontEnd.get('/return', async (req, res) => {
   const expectedState = req.cookies[STATE_COOKIE_NAME];
-  const actualState = req.query.state;
+  const actualState =
+    typeof req.query.state === 'string' ? req.query.state : undefined;
 
   res.clearCookie(STATE_COOKIE_NAME);
 
-  if (expectedState !== actualState) {
+  if (!expectedState || !actualState || expectedState !== actualState) {
     res
       .status(400)
       .send(`State mismatch expected ${expectedState} got ${actualState}`);
