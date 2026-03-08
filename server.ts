@@ -207,13 +207,19 @@ async function checkActivity(force = false) {
 
     if (!currentActivity && previousActivity) {
       trackPayload = 'event: track\ndata: null\n\n';
-    } else if (currentActivity.track.id != previousActivity?.track?.id) {
+    } else if (
+      currentActivity &&
+      currentActivity.track.id != previousActivity?.track?.id
+    ) {
       trackPayload = `event: track\ndata: ${JSON.stringify(currentActivity.track)}\n\n`;
     }
 
     if (!currentActivity && previousActivity) {
       statePayload = 'event: state\ndata: null\n\n';
-    } else if (currentActivity.is_playing != previousActivity?.is_playing) {
+    } else if (
+      currentActivity &&
+      currentActivity.is_playing != previousActivity?.is_playing
+    ) {
       statePayload = `event: state\ndata: ${JSON.stringify(currentActivity.is_playing ? 'playing' : 'paused')}\n\n`;
     }
 
