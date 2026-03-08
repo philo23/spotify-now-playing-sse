@@ -15,6 +15,7 @@ let accessToken = '';
 let expiresAt = 0;
 
 let currentActivity = null as any;
+let lastActivityRefreshAt = 0;
 
 const app = express();
 app.disable('x-powered-by');
@@ -118,7 +119,13 @@ app.get('/activity', (req, res) => {
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders();
 
+  const cacheIsStale = isActivityCacheStale();
+
   connections.add(res);
+
+  const pingTimer = setInterval(() => {
+    res.write(`: ping ${Date.now()}\n\n`);
+  }, 5000);
 
   req.on('close', () => {
     clearInterval(pingTimer);
@@ -126,11 +133,7 @@ app.get('/activity', (req, res) => {
     res.end();
   });
 
-  const pingTimer = setInterval(() => {
-    res.write(`: ping ${Date.now()}\n\n`);
-  }, 5000);
-
-  if (currentActivity) {
+  if (!cacheIsStale && currentActivity) {
     res.write(
       `event: track\ndata: ${JSON.stringify(currentActivity.track)}\n\n`,
     );
@@ -139,6 +142,10 @@ app.get('/activity', (req, res) => {
     );
     res.write(`event: progress\ndata: ${currentActivity.progress_ms}\n\n`);
   }
+
+  if (cacheIsStale) {
+    void checkActivity(true);
+  }
 });
 
 const server = createServer(app);
@@ -146,20 +153,21 @@ server.listen(config.port, () => {
   console.log('Server started on:', config.port);
 });
 
-async function checkActivity() {
+async function checkActivity(force = false) {
   try {
     const accessToken = await getAccessToken();
     if (!accessToken) {
       return;
     }
 
-    if (connections.size === 0) {
+    if (!force && connections.size === 0) {
       return;
     }
 
     const data = await currentlyPlaying({ accessToken });
     const previousActivity = currentActivity;
     currentActivity = formatActivity(data);
+    lastActivityRefreshAt = Date.now();
 
     let trackPayload = null;
     let statePayload = null;
@@ -206,6 +214,10 @@ async function pollActivity() {
 }
 
 void pollActivity();
+
+function isActivityCacheStale() {
+  return Date.now() - lastActivityRefreshAt > 5000;
+}
 
 async function getAccessToken() {
   if (Date.now() < expiresAt) {
