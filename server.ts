@@ -16,6 +16,7 @@ let expiresAt = 0;
 
 let currentActivity = null as any;
 let lastActivityRefreshAt = 0;
+let isCheckingActivity = false;
 
 const app = express();
 app.disable('x-powered-by');
@@ -154,6 +155,12 @@ server.listen(config.port, () => {
 });
 
 async function checkActivity(force = false) {
+  if (isCheckingActivity) {
+    return;
+  }
+
+  isCheckingActivity = true;
+
   try {
     const accessToken = await getAccessToken();
     if (!accessToken) {
@@ -205,6 +212,8 @@ async function checkActivity(force = false) {
     }
   } catch (error) {
     console.error('Failed to fetch currently playing track', error);
+  } finally {
+    isCheckingActivity = false;
   }
 }
 
