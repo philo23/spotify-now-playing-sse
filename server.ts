@@ -130,6 +130,11 @@ app.get('/activity', (req, res) => {
     return;
   }
 
+  if (config.sseAllowOrigin != '*' && req.headers.origin != config.sseAllowOrigin) {
+    res.status(403).send('Invalid Origin');
+    return;
+  }
+
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Access-Control-Allow-Origin', config.sseAllowOrigin);
