@@ -23,6 +23,7 @@ let isCheckingActivity = false;
 
 const app = express();
 app.disable('x-powered-by');
+app.set('trust proxy', config.expressTrustProxy);
 
 const connections = new Set<Response>();
 

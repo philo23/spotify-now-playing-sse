@@ -7,6 +7,7 @@ export interface AppConfig {
   allowStatic: boolean;
   appUrl: string;
   redirectUri: string;
+  expressTrustProxy: string|boolean;
   sseAllowOrigin: string;
   exposePausedPlayback: boolean;
   hideExplicit: boolean;
@@ -30,6 +31,7 @@ function loadConfig(env: NodeJS.ProcessEnv): AppConfig {
     allowStatic: parseBoolean(env.ALLOW_STATIC, false),
     appUrl,
     redirectUri: new URL('return', appUrl).toString(),
+    expressTrustProxy: parseTrustProxy(env.EXPRESS_TRUST_PROXY),
     sseAllowOrigin: parseOrigin(env.SSE_ALLOW_ORIGIN, DEFAULT_SSE_ALLOW_ORIGIN),
     exposePausedPlayback: parseBoolean(env.EXPOSE_PAUSED_PLAYBACK, false),
     hideExplicit: parseBoolean(env.HIDE_EXPLICIT, false),
@@ -93,6 +95,22 @@ function parseUrl(value: string | undefined, defaultValue: string): string {
   } catch {
     throw new Error(`Invalid PUBLIC_URL: ${rawValue}`);
   }
+}
+
+function parseTrustProxy(value: string | undefined): string | boolean {
+  if (value === undefined) {
+    return false;
+  }
+
+  if (value === 'true') {
+    return true;
+  }
+
+  if (value === 'false') {
+    return false;
+  }
+
+  return value;
 }
 
 function parseOrigin(value: string | undefined, defaultValue: string): string {
