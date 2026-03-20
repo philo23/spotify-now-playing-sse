@@ -141,7 +141,7 @@ app.get('/activity', (req, res) => {
     return;
   }
 
-  if (config.sseAllowOrigin != '*' && req.headers.origin != config.sseAllowOrigin) {
+  if (req.headers.origin && config.sseAllowOrigin != '*' && req.headers.origin != config.sseAllowOrigin) {
     res.status(403).send('Invalid Origin');
     return;
   }
