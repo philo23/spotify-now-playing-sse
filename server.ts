@@ -21,11 +21,21 @@ let currentActivity = null as any;
 let lastActivityRefreshAt = 0;
 let isCheckingActivity = false;
 
+let lastStreamConnectionId = 0;
+
 const app = express();
 app.disable('x-powered-by');
 app.set('trust proxy', config.expressTrustProxy);
 
 const connections = new Set<Response>();
+
+setInterval(() => {
+  if (connections.size == 0) {
+    return;
+  }
+
+  console.log('Total activity stream connections:', connections.size);
+}, 60 * 1000);
 
 const frontEnd = express.Router();
 if (config.allowStatic) {
@@ -142,15 +152,28 @@ app.get('/activity', (req, res) => {
   res.setHeader('Connection', 'keep-alive');
   res.flushHeaders();
 
+  const streamConnectionId = lastStreamConnectionId++;
+
+  console.log('Activity stream started for', streamConnectionId, 'from', req.ip);
+
   const cacheIsStale = isActivityCacheStale();
 
   connections.add(res);
+
+  const maxAgeTimeout = setTimeout(() => {
+    console.log('Activity stream timeout for', streamConnectionId);
+
+    res.end();
+  }, 15 * 60 * 1000);
 
   const pingTimer = setInterval(() => {
     res.write(`: ping ${Date.now()}\n\n`);
   }, 5000);
 
   req.on('close', () => {
+    console.log('Activity stream closed for', streamConnectionId);
+
+    clearTimeout(maxAgeTimeout);
     clearInterval(pingTimer);
     connections.delete(res);
     res.end();
