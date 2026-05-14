@@ -14,6 +14,7 @@ export interface AppConfig {
   stateCookieSecure: boolean;
   spotifyClientId: string;
   spotifyClientSecret: string;
+  storedSettingsFile: string;
 }
 
 export const config: AppConfig = loadConfig(process.env);
@@ -40,6 +41,10 @@ function loadConfig(env: NodeJS.ProcessEnv): AppConfig {
     spotifyClientSecret: requireString(
       'SPOTIFY_CLIENT_SECRET',
       env.SPOTIFY_CLIENT_SECRET,
+    ),
+    storedSettingsFile: requireString(
+      'STORED_SETTINGS_FILE',
+      env.STORED_SETTINGS_FILE,
     ),
   };
 }

@@ -4,14 +4,14 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "start": "bun run server.ts",
-    "dev": "bun --watch run server.ts",
+    "start": "node --env-file-if-exists=.env --experimental-strip-types server.ts",
+    "dev": "node --env-file-if-exists=.env --watch --experimental-strip-types server.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@types/bun": "latest",
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
+    "@types/node": "^25.0.3",
     "prettier": "^3.8.1",
     "typescript": "^5"
   },

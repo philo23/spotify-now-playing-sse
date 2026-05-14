@@ -8,11 +8,12 @@ The main settings are:
 - `PORT`: HTTP port to listen on. Defaults to `3000`.
 - `PUBLIC_URL`: Base public URL for the app. Defaults to `http://127.0.0.1:${PORT}/`.
 - `SPOTIFY_CLIENT_ID` and `SPOTIFY_CLIENT_SECRET`: required.
+- `STORED_SETTINGS_FILE`: required path to the JSON file where settings are stored.
 - `SSE_ALLOW_ORIGIN`: `Access-Control-Allow-Origin` value for `/activity`. Defaults to `*`.
 - `STATE_COOKIE_SECURE`: optional override for the OAuth state cookie. If omitted, it follows the `PUBLIC_URL` scheme.
 - `ALLOW_STATIC`, `HIDE_EXPLICIT`, `EXPOSE_PAUSED_PLAYBACK`: optional behavior flags.
 
-While the `spotify_refresh_token` is missing, a one-time setup link is printed in the console to authorise your Spotify account.
+While the stored settings file is missing or has no refresh token, a one-time setup link is printed in the console to authorise your Spotify account.
 
 Three SSE events are emitted:
 

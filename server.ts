@@ -1,7 +1,6 @@
 import { createServer } from 'node:http';
 import express, { type Response } from 'express';
 import cookieParser from 'cookie-parser';
-import { redis } from 'bun';
 import { randomBytes } from 'node:crypto';
 import { config, STATE_COOKIE_NAME } from './config.ts';
 import {
@@ -10,12 +9,15 @@ import {
   fetchAccessToken,
   fetchRefreshToken,
 } from './spotify.ts';
+import { readSettings, storeSettings } from './settings.ts';
 
-const refreshTokenExists = await redis.exists('spotify_refresh_token');
-let setupSecret = refreshTokenExists ? null : randomBytes(32).toString('hex');
+const settings = await readSettings();
+let setupSecret =
+  settings.refreshToken.length > 0 ? null : randomBytes(32).toString('hex');
 
 let accessToken = '';
 let expiresAt = 0;
+let refreshToken = settings.refreshToken;
 
 let currentActivity = null as any;
 let lastActivityRefreshAt = 0;
@@ -99,11 +101,14 @@ frontEnd.get('/return', async (req, res) => {
       redirectUri: config.redirectUri,
     });
 
-    await redis.set('spotify_refresh_token', result.refresh_token);
-
     setupSecret = null;
     accessToken = result.access_token;
     expiresAt = Date.now() + result.expires_in * 1000;
+    refreshToken = result.refresh_token;
+
+    await storeSettings({
+      refreshToken,
+    });
   } catch (err) {
     res.status(400).send(`Failed to fetch access token: ${err}`);
     return;
@@ -115,11 +120,9 @@ frontEnd.get('/return', async (req, res) => {
 });
 
 frontEnd.get('/status', async (req, res) => {
-  const refreshTokenExists = await redis.exists('spotify_refresh_token');
-
   res.json({
     hasAccessToken: accessToken.length > 0,
-    hasRefreshToken: refreshTokenExists,
+    hasRefreshToken: refreshToken.length > 0,
     expiresAt: expiresAt,
     hasExpired: Date.now() >= expiresAt,
     connections: connections.size,
@@ -300,7 +303,6 @@ async function getAccessToken() {
     return accessToken;
   }
 
-  const refreshToken = await redis.get('spotify_refresh_token');
   if (!refreshToken) {
     return '';
   }
@@ -313,6 +315,11 @@ async function getAccessToken() {
 
   accessToken = result.access_token;
   expiresAt = Date.now() + result.expires_in * 1000;
+  refreshToken = result.refresh_token ?? refreshToken;
+
+  await storeSettings({
+    refreshToken,
+  });
 
   return accessToken;
 }
