@@ -115,5 +115,5 @@ export async function currentlyPlaying({
 }
 
 function basicAuth(username: string, password: string) {
-  return `Basic ${btoa(username + ':' + password)}`;
+  return `Basic ${Buffer.from(`${username}:${password}`, 'utf8').toString('base64')}`;
 }
