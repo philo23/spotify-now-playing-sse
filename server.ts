@@ -83,7 +83,7 @@ frontEnd.get('/return', async (req, res) => {
   if (!expectedState || !actualState || expectedState !== actualState) {
     res
       .status(400)
-      .send(`State mismatch expected ${expectedState} got ${actualState}`);
+      .send(`State mismatch`);
     return;
   }
 
@@ -110,7 +110,7 @@ frontEnd.get('/return', async (req, res) => {
       refreshToken,
     });
   } catch (err) {
-    res.status(400).send(`Failed to fetch access token: ${err}`);
+    res.status(400).send(`Failed to fetch access token`);
     return;
   }
 
