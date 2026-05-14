@@ -1,28 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
     <title>Spotify Now Playing</title>
   </head>
   <body>
     <div style="width: 300px">
-      <img
-        src=""
-        width="300"
-        height="300"
-        id="album_art"
-        crossorigin="anonymous"
-        style="object-fit: contain; background-color: #f0f0f0"
-      />
+      <div style="background-color: #f0f0f0; width: 300px; height: 300px;">
+        <img
+          src=""
+          alt=""
+          width="300"
+          height="300"
+          id="album_art"
+          crossorigin="anonymous"
+          style="object-fit: contain;"
+          hidden
+        />
+      </div>
       <div
         style="display: flex; align-items: center; gap: 5px; font-size: 13px"
       >
-        <span id="state_msg"></span>
-        <span id="progress_time"></span>
-        <progress id="progress_bar" style="flex: 1"></progress>
-        <span id="duration_time"></span>
+        <span id="state_msg">x</span>
+        <span id="progress_time">-</span>
+        <progress id="progress_bar" value="0" max="1" style="flex: 1"></progress>
+        <span id="duration_time">-</span>
       </div>
-      <div id="details">
+      <div id="details" hidden>
         <a id="track_name" target="_blank"></a>
         from
         <a id="album_name" target="_blank"></a>
@@ -50,7 +54,7 @@
         if (state && track) {
           state_msg.innerText = state === 'playing' ? '▶️' : '⏸️';
         } else {
-          state_msg.innerText = '-';
+          state_msg.innerText = 'x';
         }
       });
       source.addEventListener('track', function (event) {
@@ -58,6 +62,8 @@
 
         if (track) {
           album_art.src = track.album.images[0].url;
+          album_art.alt = "Album art for: " + track.album.name;
+          album_art.hidden = false;
           track_name.innerText = track.name;
           track_name.href = 'https://open.spotify.com/track/' + track.id;
           album_name.innerText = track.album.name;
@@ -77,6 +83,7 @@
           details.hidden = false;
         } else {
           album_art.src = '';
+          album_art.hidden = true;
           details.hidden = true;
         }
       });
