@@ -216,65 +216,72 @@ async function checkActivity(force = false) {
   isCheckingActivity = true;
 
   try {
-    const accessToken = await getAccessToken();
-    if (!accessToken) {
-      return;
-    }
+    accessToken = await getAccessToken();
+  } catch (error) {
+    console.log('Failed to fetch access token', error);
+  }
 
-    if (!force && connections.size === 0) {
-      return;
-    }
+  if (!accessToken) {
+    isCheckingActivity = false;
+    return;
+  }
 
-    const data = await currentlyPlaying({ accessToken });
-    const previousActivity = currentActivity;
+  if (!force && connections.size === 0) {
+    isCheckingActivity = false;
+    return;
+  }
+
+  const previousActivity = currentActivity;
+
+  try {
+    const data = await currentlyPlaying({accessToken});
     currentActivity = formatActivity(data);
     lastActivityRefreshAt = Date.now();
+  } catch (error) {
+    console.error('Failed to fetch currently playing track', error);
+    currentActivity = null;
+  }
 
-    let trackPayload = null;
-    let statePayload = null;
-    let progressPayload = null;
+  let trackPayload = null;
+  let statePayload = null;
+  let progressPayload = null;
 
-    if (!currentActivity && previousActivity) {
-      trackPayload = 'event: track\ndata: null\n\n';
-    } else if (
-      currentActivity &&
-      currentActivity.track.id != previousActivity?.track?.id
-    ) {
-      trackPayload = `event: track\ndata: ${JSON.stringify(currentActivity.track)}\n\n`;
-    }
+  if (!currentActivity && previousActivity) {
+    trackPayload = 'event: track\ndata: null\n\n';
+  } else if (
+    currentActivity &&
+    currentActivity.track.id != previousActivity?.track?.id
+  ) {
+    trackPayload = `event: track\ndata: ${JSON.stringify(currentActivity.track)}\n\n`;
+  }
 
-    if (!currentActivity && previousActivity) {
-      statePayload = 'event: state\ndata: null\n\n';
-    } else if (
-      currentActivity &&
-      currentActivity.is_playing != previousActivity?.is_playing
-    ) {
-      statePayload = `event: state\ndata: ${JSON.stringify(currentActivity.is_playing ? 'playing' : 'paused')}\n\n`;
-    }
+  if (!currentActivity && previousActivity) {
+    statePayload = 'event: state\ndata: null\n\n';
+  } else if (
+    currentActivity &&
+    currentActivity.is_playing != previousActivity?.is_playing
+  ) {
+    statePayload = `event: state\ndata: ${JSON.stringify(currentActivity.is_playing ? 'playing' : 'paused')}\n\n`;
+  }
 
-    if (!currentActivity && previousActivity) {
-      progressPayload = 'event: progress\ndata: null\n\n';
-    } else if (
-      currentActivity &&
-      currentActivity.progress_ms != previousActivity?.progress_ms
-    ) {
-      progressPayload = `event: progress\ndata: ${currentActivity.progress_ms}\n\n`;
-    }
+  if (!currentActivity && previousActivity) {
+    progressPayload = 'event: progress\ndata: null\n\n';
+  } else if (
+    currentActivity &&
+    currentActivity.progress_ms != previousActivity?.progress_ms
+  ) {
+    progressPayload = `event: progress\ndata: ${currentActivity.progress_ms}\n\n`;
+  }
 
-    if (!trackPayload && !statePayload && !progressPayload) {
-      return;
-    }
-
+  if (trackPayload || statePayload || progressPayload) {
     for (const res of connections) {
       if (trackPayload) res.write(trackPayload);
       if (statePayload) res.write(statePayload);
       if (progressPayload) res.write(progressPayload);
     }
-  } catch (error) {
-    console.error('Failed to fetch currently playing track', error);
-  } finally {
-    isCheckingActivity = false;
   }
+
+  isCheckingActivity = false;
 }
 
 async function pollActivity() {
@@ -295,7 +302,7 @@ async function getAccessToken() {
 
   const refreshToken = await redis.get('spotify_refresh_token');
   if (!refreshToken) {
-    return null;
+    return '';
   }
 
   const result = await fetchRefreshToken({
