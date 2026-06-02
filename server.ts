@@ -170,8 +170,8 @@ app.get('/activity', (req, res) => {
   }, 15 * 60 * 1000);
 
   const pingTimer = setInterval(() => {
-    res.write(`: ping ${Date.now()}\n\n`);
-  }, 5000);
+    res.write(`: \n\n`);
+  }, 30 * 1000);
 
   req.on('close', () => {
     console.log('Activity stream closed for', streamConnectionId);
