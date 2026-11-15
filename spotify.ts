@@ -20,12 +20,13 @@ export function authoriseUrl({
   return url.toString();
 }
 
-interface AccessTokenResponse {
+export interface AccessTokenResponse {
   access_token: string;
   expires_in: number;
   refresh_token: string;
 }
-interface RefreshTokenResponse {
+
+export interface RefreshTokenResponse {
   access_token: string;
   expires_in: number;
   refresh_token?: string;

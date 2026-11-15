@@ -7,7 +7,7 @@ export interface AppConfig {
   allowStatic: boolean;
   appUrl: string;
   redirectUri: string;
-  expressTrustProxy: string|boolean;
+  trustProxy: string | boolean;
   sseAllowOrigin: string;
   exposePausedPlayback: boolean;
   hideExplicit: boolean;
@@ -17,9 +17,7 @@ export interface AppConfig {
   storedSettingsFile: string;
 }
 
-export const config: AppConfig = loadConfig(process.env);
-
-function loadConfig(env: NodeJS.ProcessEnv): AppConfig {
+export function loadConfig(env: NodeJS.ProcessEnv): AppConfig {
   const port = parsePort(env.PORT, DEFAULT_PORT);
   const appUrl = parseUrl(env.PUBLIC_URL, `http://127.0.0.1:${port}/`);
   const stateCookieSecure = parseBoolean(
@@ -32,7 +30,7 @@ function loadConfig(env: NodeJS.ProcessEnv): AppConfig {
     allowStatic: parseBoolean(env.ALLOW_STATIC, false),
     appUrl,
     redirectUri: new URL('return', appUrl).toString(),
-    expressTrustProxy: parseTrustProxy(env.EXPRESS_TRUST_PROXY),
+    trustProxy: parseTrustProxy(env.TRUST_PROXY ?? env.EXPRESS_TRUST_PROXY),
     sseAllowOrigin: parseOrigin(env.SSE_ALLOW_ORIGIN, DEFAULT_SSE_ALLOW_ORIGIN),
     exposePausedPlayback: parseBoolean(env.EXPOSE_PAUSED_PLAYBACK, false),
     hideExplicit: parseBoolean(env.HIDE_EXPLICIT, false),

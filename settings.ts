@@ -1,14 +1,13 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { config } from './config.ts';
 
 export interface StoredSettings {
   refreshToken: string;
 }
 
-export async function readSettings(): Promise<StoredSettings> {
+export async function readSettings(filePath: string): Promise<StoredSettings> {
   try {
-    const contents = await readFile(config.storedSettingsFile, 'utf8');
+    const contents = await readFile(filePath, 'utf8');
     return parseSettings(contents);
   } catch (error) {
     if (isNotFoundError(error)) {
@@ -19,15 +18,18 @@ export async function readSettings(): Promise<StoredSettings> {
   }
 }
 
-export async function storeSettings(settings: StoredSettings): Promise<void> {
-  await mkdir(dirname(config.storedSettingsFile), { recursive: true });
+export async function storeSettings(
+  filePath: string,
+  settings: StoredSettings,
+): Promise<void> {
+  await mkdir(dirname(filePath), { recursive: true });
 
-  const tempPath = `${config.storedSettingsFile}.${process.pid}.${Date.now()}.tmp`;
+  const tempPath = `${filePath}.${process.pid}.${Date.now()}.tmp`;
   await writeFile(tempPath, `${JSON.stringify(settings, null, 2)}\n`, {
     encoding: 'utf8',
     mode: 0o600,
   });
-  await rename(tempPath, config.storedSettingsFile);
+  await rename(tempPath, filePath);
 }
 
 function parseSettings(contents: string): StoredSettings {

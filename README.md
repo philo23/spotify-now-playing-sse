@@ -11,6 +11,9 @@ The main settings are:
 - `STORED_SETTINGS_FILE`: required path to the JSON file where settings are stored.
 - `SSE_ALLOW_ORIGIN`: `Access-Control-Allow-Origin` value for `/activity`. Defaults to `*`.
 - `STATE_COOKIE_SECURE`: optional override for the OAuth state cookie. If omitted, it follows the `PUBLIC_URL` scheme.
+- `TRUST_PROXY`: optional proxy addresses or named ranges to trust when resolving
+  the client IP written to connection logs. Boolean values are also supported.
+  `EXPRESS_TRUST_PROXY` remains available as a legacy fallback.
 - `ALLOW_STATIC`, `HIDE_EXPLICIT`, `EXPOSE_PAUSED_PLAYBACK`: optional behavior flags.
 
 While the stored settings file is missing or has no refresh token, a one-time setup link is printed in the console to authorise your Spotify account.

@@ -1,22 +1,22 @@
 {
   "name": "spotify-now-playing",
-  "module": "index.ts",
   "type": "module",
   "private": true,
   "scripts": {
     "start": "node --env-file-if-exists=.env --experimental-strip-types server.ts",
     "dev": "node --env-file-if-exists=.env --watch --experimental-strip-types server.ts",
+    "test": "node --experimental-strip-types --test test/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "@types/cookie-parser": "^1.4.10",
-    "@types/express": "^5.0.6",
     "@types/node": "^25.0.3",
+    "@types/proxy-addr": "^2.0.3",
     "prettier": "^3.8.1",
     "typescript": "^5"
   },
   "dependencies": {
-    "cookie-parser": "^1.4.7",
-    "express": "^5.2.1"
+    "@hono/node-server": "^2.0.10",
+    "hono": "^4.12.31",
+    "proxy-addr": "^2.0.7"
   }
 }
