@@ -84,3 +84,18 @@ deployment, set `PUBLIC_URL` to your public HTTPS base URL and register its
 
 Open the setup link from the container logs to authorise Spotify. The named
 volume keeps the refresh token when you replace the container.
+
+## Pull the image from GitHub Container Registry
+
+The [publish workflow](.github/workflows/publish-image.yml) builds a Linux
+`amd64` image on every push to `master` and tags it with the commit SHA and
+`latest`. GitHub creates new packages as private. To pull a private image,
+sign in to GHCR using a personal access token (classic) with `read:packages`.
+[GitHub Container Registry authentication](https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry#authenticating-with-a-personal-access-token-classic)
+
+```sh
+docker pull ghcr.io/philo23/spotify-now-playing-sse:latest
+```
+
+Use `ghcr.io/philo23/spotify-now-playing-sse:latest` as the image name in the
+`docker run` command above.
