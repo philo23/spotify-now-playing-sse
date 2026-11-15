@@ -1,0 +1,7 @@
+# Include only the files needed to build the image.
+*
+!package.json
+!package-lock.json
+!*.ts
+!public/
+!public/**

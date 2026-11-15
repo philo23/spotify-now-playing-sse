@@ -61,3 +61,26 @@ interface TrackState {
   track: Track;
 }
 ```
+
+## Run with Docker
+
+Create `.env` from `.env.example` and fill in your Spotify credentials. Use
+unquoted values with Docker's `--env-file` and keep `PORT=3000` for this example.
+
+```sh
+docker build -t spotify-now-playing .
+docker run -d --init --name spotify-now-playing \
+  --env-file .env \
+  -e STORED_SETTINGS_FILE=/data/settings.json \
+  -p 3000:3000 \
+  -v spotify-now-playing-data:/data \
+  spotify-now-playing
+docker logs spotify-now-playing
+```
+
+Register `http://127.0.0.1:3000/return` in your Spotify app settings. For a remote
+deployment, set `PUBLIC_URL` to your public HTTPS base URL and register its
+`/return` callback. [Spotify redirect URI requirements](https://developer.spotify.com/documentation/web-api/concepts/redirect_uri)
+
+Open the setup link from the container logs to authorise Spotify. The named
+volume keeps the refresh token when you replace the container.
